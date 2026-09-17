@@ -1,0 +1,4 @@
+<resources>
+    <!-- Matches the app's light panel ground so there is no flash before JS starts. -->
+    <color name="splash_background">#E8EBF0</color>
+</resources>

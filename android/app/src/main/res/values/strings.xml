@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">BudgetGuard</string>
+    <string name="budget_widget_description">Today\'s budget, monthly saved, and quick add</string>
+    <string name="categories_widget_description">Category budgets and quick add</string>
+    <string name="transactions_widget_description">Today\'s transactions</string>
+    <string name="savings_widget_description">How your projected savings adds up</string>
+    <string name="calendar_widget_description">Saved or overspent, day by day</string>
 </resources>

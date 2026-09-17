@@ -1,45 +1,57 @@
 /**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
+ * BudgetGuard
  * @format
  */
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
+import { AppState, StatusBar } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider, useTheme } from './src/app/theme/ThemeProvider';
+import { RootNavigator } from './src/app/navigation/RootNavigator';
+import { useBudgetStore } from './src/store/budgetStore';
+import { onTransactionDetected } from './src/native/localNotification';
+import { SplashAnimation } from './src/components/SplashAnimation';
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+function AppShell() {
+  const { dark } = useTheme();
+  const loading = useBudgetStore((s) => s.loading);
+  const bootstrap = useBudgetStore((s) => s.bootstrap);
+  const [splashDone, setSplashDone] = useState(false);
+
+  useEffect(() => {
+    bootstrap();
+  }, [bootstrap]);
+
+  // The notification listener writes transactions straight to SQLite with no JS
+  // involved: reload when the app comes back, and when it tells us a payment
+  // landed while we were already open.
+  useEffect(() => {
+    const appState = AppState.addEventListener('change', (next) => {
+      if (next === 'active') useBudgetStore.getState().refresh();
+    });
+    const detected = onTransactionDetected(() => useBudgetStore.getState().refresh());
+    return () => {
+      appState.remove();
+      detected.remove();
+    };
+  }, []);
 
   return (
+    <>
+      <StatusBar barStyle={dark ? 'light-content' : 'dark-content'} />
+      {loading || !splashDone ? <SplashAnimation onFinish={() => setSplashDone(true)} /> : <RootNavigator />}
+    </>
+  );
+}
+
+function App() {
+  return (
     <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
+      <ThemeProvider>
+        <AppShell />
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
 
 export default App;
