@@ -1,97 +1,62 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# BudgetGuard
 
-# Getting Started
+BudgetGuard is an offline-first Android budgeting app that turns income, fixed costs, planned expenses, and savings goals into a daily spending allowance you can check in the app or from an Android home-screen widget.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Highlights
 
-## Step 1: Start Metro
+- Salary-day or custom-date budget cycles with automatic rollover.
+- Daily accrual, saved/overspent pace, category allowances, and a protected `Others` remainder category.
+- Manual income, fixed-expense, planned-expense, and transaction tracking.
+- On-device transaction detection from selected payment, banking, SMS, and mail notifications using deterministic Kotlin parsing; no LLM or server is involved.
+- Five Android widgets: budget overview, categories, transactions, savings, and cycle calendar.
+- Local SQLite persistence with integer paise arithmetic throughout.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Architecture
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+```text
+React Native / TypeScript screens
+        -> Zustand store + selectors
+        -> op-sqlite repositories + MMKV settings
+        -> Android Kotlin notification listener and widget providers
+```
 
-```sh
-# Using npm
+The shared budgeting functions under [`src/budget/`](src/budget/) calculate accrual, allowances, savings, rollover, and widget snapshots. Native Android code writes detected transactions to the same local database and exposes widget/notification integration. Product and design decisions are documented in [`PRODUCT.md`](PRODUCT.md) and [`DESIGN.md`](DESIGN.md).
+
+## Technology
+
+React Native 0.87, React 19, TypeScript, React Navigation, Zustand, `op-sqlite`, MMKV, `date-fns`, `zod`, `react-native-android-widget`, Kotlin, Android widgets, Jest, and native Android/iOS project scaffolding.
+
+## Development setup
+
+Install Node.js `>=22.11.0`, Android Studio/SDK for Android development, and Ruby/CocoaPods for iOS development. Then:
+
+```bash
+npm install
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
+In a second terminal, run one target:
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
+```bash
 npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+# or
+bundle install && bundle exec pod install
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+Useful checks:
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```bash
+npm test
+npm run lint
+```
 
-## Step 3: Modify your app
+The notification listener is Android-specific. To enable automatic detection on a device, complete onboarding and grant BudgetGuard notification-listener access in Android settings; the app will only process packages selected in its watch list. iOS builds do not provide that Android listener behavior.
 
-Now that you have successfully run the app, let's make changes!
+## Privacy and limitations
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+The intended product constraint is fully local: no account, server, analytics, or network-backed data sync. Android notification access is sensitive and should be granted only on a device you control. The repository contains development-only native assets and does not provide a signed release, store listing, CI/CD pipeline, or production distribution instructions.
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+## Current status
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+**Active early-stage product prototype.** The app has a broad implemented surface, native Android integrations, and unit tests for budgeting, parsing, and components. It remains pre-release: platform/device coverage, release signing, migration hardening, accessibility verification, and end-to-end testing still need to be completed before public distribution.
